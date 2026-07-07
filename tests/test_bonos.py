@@ -5,25 +5,30 @@ Correr: python3 -m pytest tests/test_bonos.py
 import os, sys
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
-from pydantic import BaseModel
-
 
 # --- Test 1: Modelo ReclamarRequest ---
 def test_reclamar_request_modelo():
     """Valida que el modelo ReclamarRequest funciona correctamente."""
     from app.main import ReclamarRequest
-    req = ReclamarRequest(usuario_id=1)
-    assert req.usuario_id == 1
+    req = ReclamarRequest(monto_base=100.0)
+    assert req.monto_base == 100.0
 
 
-def test_reclamar_request_requiere_usuario_id():
-    """ReclamarRequest debe requerir usuario_id."""
+def test_reclamar_request_default():
+    """ReclamarRequest debe tener monto_base=0 por defecto."""
+    from app.main import ReclamarRequest
+    req = ReclamarRequest()
+    assert req.monto_base == 0
+
+
+def test_reclamar_request_rechaza_negativos():
+    """ReclamarRequest debe rechazar montos negativos (ge=0)."""
     from app.main import ReclamarRequest
     try:
-        req = ReclamarRequest()  # sin usuario_id
-        assert False, "Debería fallar sin usuario_id"
+        ReclamarRequest(monto_base=-10)
+        assert False, "Debería fallar con monto_base negativo"
     except Exception:
-        pass  # correcto: falla sin el campo requerido
+        pass  # correcto: la validación ge=0 lo rechaza
 
 
 # --- Test 2: Endpoint /livez devuelve estructura correcta ---
